@@ -29,6 +29,8 @@ namespace BackItUp_Shark
 
             if (backupName == "") // Generate default backup name if not specified
                 backupName = "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year;
+            else if (backupName.Contains("DATE"))
+                backupName.Replace("DATE", "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year);
 
             /* SET DESTINATION PATH */ 
             backupDestPath = System.IO.Path.Combine(destPath, "Backup", backupName); // (*userinputted drive*\Backup\*Backup Name*)

@@ -65,16 +65,33 @@ namespace BackItUp_Shark
             System.Environment.Exit(1); // Exit program
         }
 
+        // Create default backup name based on drive that is being copied
+        static String createDefaultBackupName(String driveLetter)
+        {
+            String name;
+            foreach (var drive in System.IO.DriveInfo.GetDrives())
+            {
+                if (drive.Name == driveLetter.ToUpper + ":")
+
+            }
+            if (drive.VolumeLabel == "")
+                name = "Backup";
+            else
+                name = drive.VolumeLabel;
+            return name;
+        }
+
         // Simple Terminal User Interface
         static void simpleTUI() 
         {
             while (true) // Main menu loop
             {
                 List<System.IO.DriveInfo> driveList = new List<System.IO.DriveInfo>(); //= System.IO.DriveInfo.GetDrives().ToList();
-                string backupTarget, backupLoc, input;
+                string backupTarget, backupLoc, backupName, input, defaultName;
+                System.IO.DriveInfo targetDrive;
                 int count = 1;
 
-                Console.WriteLine("BackItUp Shark V1.2 [Build 28/10/2016]");
+                Console.WriteLine("BackItUp Shark V1.2.1 [Build 28/10/2016]");
                 Console.WriteLine("type 'help' for more, 'r' to refresh");
                 Console.WriteLine();
 
@@ -82,7 +99,7 @@ namespace BackItUp_Shark
                 {
                     try
                     {
-                        Console.Write("{0}      {1}       {2}GB free of {3}GB", count, drive.Name, (((drive.TotalFreeSpace / 1024) / 1024) / 1024), (((drive.TotalSize / 1024) / 1024) / 1024));
+                        Console.Write(" [{0}]      {1}       {2}GB free of {3}GB", count, drive.Name, (((drive.TotalFreeSpace / 1024) / 1024) / 1024), (((drive.TotalSize / 1024) / 1024) / 1024));
                         Console.SetCursorPosition(40, Console.CursorTop);
                         Console.WriteLine(drive.VolumeLabel);
                         driveList.Add(drive);
@@ -91,22 +108,34 @@ namespace BackItUp_Shark
                     catch (System.IO.IOException) { }
                 }
 
-                // Get user input
+                // Get backup locations
                 Console.WriteLine();
                 Console.Write("Backup Source: ");
                 input = Console.ReadLine();
                 if (CheckMenuInput(input)) // Check user input
                     continue;
-                backupTarget = driveList.ElementAt(Convert.ToInt32(input) - 1).Name;
+                targetDrive = driveList.ElementAt(Convert.ToInt32(input) - 1); // Get drive info for target drive
+                backupTarget = targetDrive.Name;
+                defaultName = targetDrive.VolumeLabel == "" ? "Backup" : targetDrive.VolumeLabel;
                 Console.Write("Backup Destination: ");
                 input = Console.ReadLine();
                 if (CheckMenuInput(input))
                     continue;
                 backupLoc = driveList.ElementAt(Convert.ToInt32(input) - 1).Name;
 
+                // Get backup name
+                Console.Write("Backup Name (leave blank to use default name): ");
+                input = Console.ReadLine();
+                if (input == "")
+                    backupName = "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year;
+                else if (input.Contains("DATE"))
+                    backupName = input.Replace("DATE", DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year);
+                else
+                    backupName = input;
+
                 // Summary
                 Console.WriteLine();
-                Console.WriteLine("BackItUp_Shark will create back up of " + backupTarget);
+                Console.WriteLine("BackItUp_Shark will create backup of " + backupTarget + " called [" + backupName + "]");
                 Console.WriteLine("Here : [" + backupLoc + "Backup]");
 
                 // Confirm
@@ -116,7 +145,7 @@ namespace BackItUp_Shark
                 Console.WriteLine();
 
                 // Initiate backup
-                BackItUp_Shark_Core.Backup(backupTarget, backupLoc, "", false);
+                BackItUp_Shark_Core.Backup(backupTarget, backupLoc, backupName, false);
                 
                 // Pause before exit
                 Console.Write("Press any key to exit...");
@@ -125,6 +154,11 @@ namespace BackItUp_Shark
                 break; // Exit menu
 
             }
+        }
+
+        static void displayExistingBackups(string drive) // Display any existing backups found in drive\backups (if there are any)
+        {
+
         }
 
         static bool CheckMenuInput(string input) // Check user input in simpleTUI()
@@ -166,7 +200,7 @@ namespace BackItUp_Shark
             Console.WriteLine("    [silent]          Run back up with no output");
             Console.WriteLine("    [merge]           Merge with existing back up (NOTE Will only merge");
             Console.WriteLine("                      with back up of the same name");
-            Console.WriteLine("    [name]            Name of back up");
+            Console.WriteLine("    [name]            Name of back up (use \"DATE\" to add current date to name)");
             Console.WriteLine();
             Console.WriteLine("    Options:");
             Console.WriteLine("       /?             Displays help message");
