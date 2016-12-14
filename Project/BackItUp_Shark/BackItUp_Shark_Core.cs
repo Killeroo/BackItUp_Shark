@@ -28,8 +28,8 @@ namespace BackItUp_Shark
             int fileCount = 0;
 
             if (backupName == "") // Generate default backup name if not specified
-                backupName = "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year;
-            else if (backupName.Contains("DATE"))
+                backupName = createDefaultBackupName(targetPath);
+            else if (backupName.Contains("DATE")) // Add timestamp
                 backupName.Replace("DATE", "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year);
 
             /* SET DESTINATION PATH */ 
@@ -106,6 +106,27 @@ namespace BackItUp_Shark
             /* BACKUP SUMMARY */
             if (!quietMode)
                 BackupSummary(fileCount, backupName, targetPath, backupDestPath, stopWatch.Elapsed);
+        }
+
+        // Create default backup name
+        public static String createDefaultBackupName(String driveLetter)
+        {
+            String name;
+            System.IO.DriveInfo drive = null;
+            driveLetter = System.IO.Path.GetPathRoot(driveLetter); // Make sure we are targetting the root
+
+            foreach (var d in System.IO.DriveInfo.GetDrives())
+                if (d.Name == driveLetter)
+                    drive = d;
+
+            if (drive.VolumeLabel == "")
+                name = "Backup";
+            else
+                name = drive.VolumeLabel;
+
+            name += "_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year;
+
+            return name;
         }
 
         static void SetupBackupDir(string backupDestPath, string backupName)
