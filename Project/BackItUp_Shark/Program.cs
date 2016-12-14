@@ -92,6 +92,9 @@ namespace BackItUp_Shark
                     catch (System.IO.IOException) { }
                 }
 
+                // Display existing backups (if there are any)
+                displayExistingBackups(System.IO.Path.GetPathRoot(System.Reflection.Assembly.GetExecutingAssembly().Location)); // TODO: move program finding to displayExistingBackups
+
                 // Get backup locations
                 Console.WriteLine();
                 Console.Write("Backup Source: ");
@@ -137,8 +140,28 @@ namespace BackItUp_Shark
             }
         }
 
-        static void displayExistingBackups(string drive) // Display any existing backups found in drive\backups (if there are any)
+        static void displayExistingBackups(string backupDir) // Display any existing backups found in drive\backups (if there are any)
         {
+            backupDir = System.IO.Path.Combine(System.IO.Path.GetPathRoot(backupDir), "Backup");
+            
+            // Check if backup directory exists
+            if (!System.IO.Directory.Exists(backupDir))
+                return;
+
+            // Check if there are any backups
+            if ((System.IO.Directory.GetDirectories(backupDir)).Length == 0)
+                return;
+            
+            // Backup directory must exist
+            Console.WriteLine();
+            Console.WriteLine("----------------------------");
+            Console.WriteLine("Backups Found at [ {0} ]", System.IO.Path.GetPathRoot(backupDir));
+            Console.WriteLine("----------------------------");
+            foreach (var dir in System.IO.Directory.GetDirectories(backupDir))
+                String dirName = dir.Split("\\")[2];
+                Console.WriteLine("[-] {0}", );
+            Console.WriteLine("----------------------------");
+            Console.WriteLine();
 
         }
 
