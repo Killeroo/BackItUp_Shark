@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace BackItUp_Shark
 {
@@ -74,11 +75,18 @@ namespace BackItUp_Shark
                 string backupTarget, backupLoc, backupName, input, defaultName;
                 System.IO.DriveInfo targetDrive;
                 int count = 1;
+                Version v = Assembly.GetExecutingAssembly().GetName().Version;
+                string version = Assembly.GetExecutingAssembly().GetName().Name + " Version " + v.Major + "." + v.Minor + "." + v.Build + " (r" + v.Revision + ")";
 
-                Console.WriteLine("BackItUp Shark V1.2.1 [Build 14/12/2016]");
+                Console.WriteLine(version);
                 Console.WriteLine("type 'help' for more, 'r' to refresh");
-                Console.WriteLine();
+                //Console.WriteLine();
 
+                // Display existing backups (if there are any)
+                displayExistingBackups(System.IO.Path.GetPathRoot(System.Reflection.Assembly.GetExecutingAssembly().Location)); // TODO: move program finding to displayExistingBackups
+                //Console.WriteLine();
+
+                Console.WriteLine("Drive List ═════════════════════════════════════════");
                 foreach (var drive in System.IO.DriveInfo.GetDrives())
                 {
                     try
@@ -91,12 +99,11 @@ namespace BackItUp_Shark
                     }
                     catch (System.IO.IOException) { }
                 }
-
-                // Display existing backups (if there are any)
-                displayExistingBackups(System.IO.Path.GetPathRoot(System.Reflection.Assembly.GetExecutingAssembly().Location)); // TODO: move program finding to displayExistingBackups
+                Console.WriteLine("════════════════════════════════════════════════════");
 
                 // Get backup locations
                 Console.WriteLine();
+                //Console.WriteLine("Select drive to backup from 'Drive List'");
                 Console.Write("Backup Source: ");
                 input = Console.ReadLine();
                 if (CheckMenuInput(input)) // Check user input
@@ -154,13 +161,13 @@ namespace BackItUp_Shark
             
             // Backup directory must exist
             Console.WriteLine();
-            Console.WriteLine("----------------------------");
-            Console.WriteLine("Backups Found at [ {0} ]", System.IO.Path.GetPathRoot(backupDir));
-            Console.WriteLine("----------------------------");
+            //Console.WriteLine("────────────────────────────────");
+            Console.WriteLine("Existing backups ───────────────");//on [ {0} ]", System.IO.Path.GetPathRoot(backupDir));
+            //Console.WriteLine("────────────────────────────────");
             foreach (var dir in System.IO.Directory.GetDirectories(backupDir))
-                String dirName = dir.Split("\\")[2];
-                Console.WriteLine("[-] {0}", );
-            Console.WriteLine("----------------------------");
+                //String dirName = dir.Split("\\")[2];
+                Console.WriteLine("[-] {0}", dir);
+            Console.WriteLine("────────────────────────────────");
             Console.WriteLine();
 
         }
