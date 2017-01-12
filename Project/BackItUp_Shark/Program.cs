@@ -60,8 +60,14 @@ namespace BackItUp_Shark
                 }
             }
 
+            // Hide cursor while backup running
+            Console.CursorVisible = false;
+
             /* INITIATE BACK UP */
             BackItUp_Shark_Core.Backup(args[0], args[1], customBackupName, silentBackup, mergeBackup);
+
+            // Show cursor again
+            Console.CursorVisible = true;
 
             System.Environment.Exit(1); // Exit program
         }
@@ -80,13 +86,11 @@ namespace BackItUp_Shark
 
                 Console.WriteLine(version);
                 Console.WriteLine("type 'help' for more, 'r' to refresh");
-                //Console.WriteLine();
+                Console.WriteLine();
 
-                // Display existing backups (if there are any)
-                displayExistingBackups(System.IO.Path.GetPathRoot(System.Reflection.Assembly.GetExecutingAssembly().Location)); // TODO: move program finding to displayExistingBackups
-                //Console.WriteLine();
-
-                Console.WriteLine("Drive List ═════════════════════════════════════════");
+                // Drive list
+                Console.WriteLine("══════════════════ Drive List ══════════════════════");
+                Console.WriteLine();
                 foreach (var drive in System.IO.DriveInfo.GetDrives())
                 {
                     try
@@ -99,22 +103,25 @@ namespace BackItUp_Shark
                     }
                     catch (System.IO.IOException) { }
                 }
+                Console.WriteLine();
                 Console.WriteLine("════════════════════════════════════════════════════");
 
                 // Get backup locations
                 Console.WriteLine();
-                //Console.WriteLine("Select drive to backup from 'Drive List'");
-                Console.Write("Backup Source: ");
+                Console.Write("Drive to backup: ");
                 input = Console.ReadLine();
                 if (CheckMenuInput(input)) // Check user input
                     continue;
                 targetDrive = driveList.ElementAt(Convert.ToInt32(input) - 1); // Get drive info for target drive
                 backupTarget = targetDrive.Name;
-                Console.Write("Backup Destination: ");
+                Console.Write("Save backup to: ");
                 input = Console.ReadLine();
                 if (CheckMenuInput(input))
                     continue;
                 backupLoc = driveList.ElementAt(Convert.ToInt32(input) - 1).Name;
+
+                // Show existing backups found
+                displayExistingBackups(backupLoc);
 
                 // Get backup name
                 Console.Write("Backup Name (leave blank to use default name): ");
@@ -135,8 +142,14 @@ namespace BackItUp_Shark
                 Console.ReadKey();
                 Console.WriteLine();
 
+                // Hide cursor while backup running
+                Console.CursorVisible = false;
+
                 // Initiate backup
                 BackItUp_Shark_Core.Backup(backupTarget, backupLoc, backupName, false);
+
+                // Show cursor after running
+                Console.CursorVisible = true;
                 
                 // Pause before exit
                 Console.Write("Press any key to exit...");
@@ -161,13 +174,12 @@ namespace BackItUp_Shark
             
             // Backup directory must exist
             Console.WriteLine();
-            //Console.WriteLine("────────────────────────────────");
-            Console.WriteLine("Existing backups ───────────────");//on [ {0} ]", System.IO.Path.GetPathRoot(backupDir));
-            //Console.WriteLine("────────────────────────────────");
+            Console.WriteLine("══════════ Existing Backups Found [ {0} ] ══════════", System.IO.Path.GetPathRoot(backupDir));
+            Console.WriteLine();
             foreach (var dir in System.IO.Directory.GetDirectories(backupDir))
-                //String dirName = dir.Split("\\")[2];
                 Console.WriteLine("[-] {0}", dir);
-            Console.WriteLine("────────────────────────────────");
+            Console.WriteLine();
+            Console.WriteLine("════════════════════════════════════════════════════");
             Console.WriteLine();
 
         }
