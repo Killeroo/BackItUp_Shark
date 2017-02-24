@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace BackItUp_Shark
 {
@@ -45,12 +42,12 @@ namespace BackItUp_Shark
                 SetupBackupDir(backupDestPath, backupName);
             
             /* FILE DISCOVERY */
-            LogMessage("Discovering files in [ " + targetPath + " ] . . . ", "");
+            log("Discovering files in [ " + targetPath + " ] . . . ", "");
             driveFiles = GetFiles(targetPath);
-            LogMessage("DONE", "", true);
-            LogMessage(driveFiles.Count() + " files found.", "", true);
+            log("DONE", "", true);
+            log(driveFiles.Count() + " files found.", "", true);
 
-            LogMessage("Starting backup . . . ", "", true);
+            log("Starting backup . . . ", "", true);
             stopWatch = System.Diagnostics.Stopwatch.StartNew(); // Start timer
 
             /* FILE COPY */
@@ -68,37 +65,41 @@ namespace BackItUp_Shark
                     }
                     catch (Exception)
                     {
-                        LogMessage("ERROR CREATING BACKUP DESTINATION SUB FOLDER", "error", true);
+                        log("ERROR CREATING BACKUP DESTINATION SUB FOLDER", "error", true);
                     }
                 }
 
                 try
                 {
                     /* COPY FILE */
-                    LogMessage("", "copying", false, file);
+                    log("", "copying", false, file);
                     System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
-                    LogMessage("[DONE]", "", true, null, ConsoleColor.DarkGreen);
+                    log("[DONE]", "", true, null, ConsoleColor.DarkGreen);
                     fileCount++;
                     // Update title bar
                     double num = driveFiles.Count();
                     double percent = (fileCount / num) * 100;
-                    LogMessage("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [RUNNING] " + Math.Round(percent, 0) + "% complete");
+                    log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [RUNNING] " + Math.Round(percent, 0) + "% complete");
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    LogMessage("Access denied.", "error", true);
+                    log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
+                    log("Access denied.", "error", true);
                 }
                 catch (System.IO.FileNotFoundException)
                 {
-                    LogMessage("Cannot find " + file.Name, "error", true);
+                    log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
+                    log("Cannot find " + file.Name, "error", true);
                 }
                 catch (System.IO.PathTooLongException)
                 {
-                    LogMessage("Target path too long. Cannot copy " + file.FullName, "error", true);
+                    log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
+                    log("Target path too long. Cannot copy " + file.FullName, "error", true);
                 }
                 catch (Exception)
                 {
-                    LogMessage(file.Name + " Cannot be copied.", "error", true);
+                    log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
+                    log(file.Name + " Cannot be copied.", "error", true);
                 }
             }
             stopWatch.Stop(); // Stop stopwatch
@@ -141,29 +142,29 @@ namespace BackItUp_Shark
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    LogMessage("ACCESS TO BACKUP DIRECTORY DENIED (Run as Admin then try again)", "error", true);
+                    log("ACCESS TO BACKUP DIRECTORY DENIED (Run as Admin then try again)", "error", true);
                 }
                 catch (System.IO.IOException)
                 {
-                    LogMessage("ERROR CREATING BACKUP DIRECTORY", "error", true);
+                    log("ERROR CREATING BACKUP DIRECTORY", "error", true);
                 }
                 catch (Exception)
                 {
-                    LogMessage("AN HAS ERROR OCCURED CREATING BACKUP FOLDER", "error", true);
+                    log("AN HAS ERROR OCCURED CREATING BACKUP FOLDER", "error", true);
                 }
 
-                LogMessage("Backup directory [" + backupName + "] Created.", "", true);
+                log("Backup directory [" + backupName + "] Created.", "", true);
             }
             else
             {
                 /* DELETE EXISTING BACKUP FOLDER */
-                LogMessage("Backup folder [" + backupName + "] found.", "", true);
-                LogMessage("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [PURGING]");
-                LogMessage("Purging previous backup data . . . ", "", true, null, ConsoleColor.DarkRed);
+                log("Backup folder [" + backupName + "] found.", "", true);
+                log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [PURGING]");
+                log("Purging previous backup data . . . ", "", true, null, ConsoleColor.DarkRed);
 
                 // Delete files in folder root
                 System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(backupDestPath);
-                LogMessage(di.FullName, "deleting", true);
+                log(di.FullName, "deleting", true);
                 foreach (System.IO.FileInfo file in di.GetFiles())
                 {
                     try
@@ -172,7 +173,7 @@ namespace BackItUp_Shark
                     }
                     catch (Exception)
                     {
-                        LogMessage("File [" + file.Name + "] could not be deleted.", "warning", true);
+                        log("File [" + file.Name + "] could not be deleted.", "warning", true);
                     }
                 }
 
@@ -181,16 +182,16 @@ namespace BackItUp_Shark
                 {
                     try
                     {
-                        LogMessage(dir.FullName, "deleting", true);
+                        log(dir.FullName, "deleting", true);
                         dir.Delete(true);
                     }
                     catch (Exception)
                     {
-                        LogMessage("Folder [ " + dir.Name + " ] could not be deleted.", "warning", true);
+                        log("Folder [ " + dir.Name + " ] could not be deleted.", "warning", true);
                     }
                 }
 
-                LogMessage("Purging complete.", "", true, null, ConsoleColor.DarkRed);
+                log("Purging complete.", "", true, null, ConsoleColor.DarkRed);
             }
         }
 
@@ -205,9 +206,9 @@ namespace BackItUp_Shark
             /* FIND NEW OR MODIFIED FILES */
             List<System.IO.FileInfo> missingFromBackupFiles = (from file in newFiles select file).Except(existingFiles, myFileCompare).ToList(); // use custom filecompare class and find missing or changed files between existing backup folder and backup targets
 
-            LogMessage("Backup folder [" + backupName + "] found.", "", true);
-            LogMessage("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [UPDATING]");
-            LogMessage("Updating back up . . . ", "", true, null, ConsoleColor.DarkCyan);
+            log("Backup folder [" + backupName + "] found.", "", true);
+            log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [UPDATING]");
+            log("Updating back up . . . ", "", true, null, ConsoleColor.DarkCyan);
 
             /* BACKUP UPDATE & ADD */
             foreach (var file in missingFromBackupFiles)
@@ -227,38 +228,38 @@ namespace BackItUp_Shark
                     }
                     catch (Exception)
                     {
-                        LogMessage("ERROR CREATING FOLDER IN EXISTING BACKUP", "error", true);
+                        log("ERROR CREATING FOLDER IN EXISTING BACKUP", "error", true);
                     }
                 }
 
                 try
                 {
                     /* FILE COPY */
-                    LogMessage(file.FullName + " . . . ", System.IO.File.Exists(curFullDest) ? "updating" : "adding");
+                    log(file.FullName + " . . . ", System.IO.File.Exists(curFullDest) ? "updating" : "adding");
                     System.IO.File.Copy(file.FullName, curFullDest, true);
-                    LogMessage("DONE", "", true, null, System.IO.File.Exists(curFullDest) ? ConsoleColor.DarkCyan : ConsoleColor.DarkGreen);
+                    log("DONE", "", true, null, System.IO.File.Exists(curFullDest) ? ConsoleColor.DarkCyan : ConsoleColor.DarkGreen);
                     fileCount++;
                     // Update title bar
                     double num = missingFromBackupFiles.Count();
                     double percent = (fileCount / num) * 100;
-                    LogMessage("", "", false, null, ConsoleColor.DarkGray, "BackItUp_Shark [UPDATING] " + Math.Round(percent, 0) + "% complete");
+                    log("", "", false, null, ConsoleColor.DarkGray, "BackItUp_Shark [UPDATING] " + Math.Round(percent, 0) + "% complete");
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    LogMessage("ACCESS DENIED (Run as Admin then try again)", "error", true);
+                    log("ACCESS DENIED (Run as Admin then try again)", "error", true);
                 }
                 catch (System.IO.FileNotFoundException)
                 {
-                    LogMessage("ERROR FILE [" + file.Name + "] COULD NOT BE FOUND", "error", true);
+                    log("ERROR FILE [" + file.Name + "] COULD NOT BE FOUND", "error", true);
                 }
                 catch (Exception)
                 {
-                    LogMessage("ERROR FILE [" + file.Name + "] COUNT NOT BE COPIED", "error", true);
+                    log("ERROR FILE [" + file.Name + "] COUNT NOT BE COPIED", "error", true);
                 }
             }
 
-            LogMessage("[" + backupName + "] merge done.", "", true, null, ConsoleColor.DarkCyan);
-            LogMessage("Backup complete.", "", false, null, ConsoleColor.Green);
+            log("[" + backupName + "] merge done.", "", true, null, ConsoleColor.DarkCyan);
+            log("Backup complete.", "", false, null, ConsoleColor.Green);
             System.Environment.Exit(1); // Exit after updating
             return;
         }
@@ -285,15 +286,15 @@ namespace BackItUp_Shark
             }
             catch (UnauthorizedAccessException)
             {
-                LogMessage("ACCESS TO BACKUP DIRECTORY DENIED (Run as Admin then try again)", "error", true);
+                log("ACCESS TO BACKUP DIRECTORY DENIED (Run as Admin then try again)", "error", true);
             }
             catch (System.IO.DriveNotFoundException)
             {
-                LogMessage("ERROR FILE MISSING", "error", true);
+                log("ERROR FILE MISSING", "error", true);
             }
             catch (Exception e)
             {
-                LogMessage("EXCEPTION [" + e.Message + "]", "error", true);
+                log("EXCEPTION [" + e.Message + "]", "error", true);
             }
 
             // Print each of the files
@@ -309,7 +310,7 @@ namespace BackItUp_Shark
             }
         }
 
-        static void LogMessage(string message = "", string status = "", bool newLine = false, FileInfo file = null, ConsoleColor color = ConsoleColor.Gray, string windowBarMsg = "") //long fileSizeBytes = 0L)
+        static void log(string message = "", string status = "", bool newLine = false, FileInfo file = null, ConsoleColor color = ConsoleColor.Gray, string windowBarMsg = "") //long fileSizeBytes = 0L)
         {
             if (!quietMode) // If quiet mode don't display output
             {
@@ -336,8 +337,8 @@ namespace BackItUp_Shark
                         break;
 
                     case "error":
-                        color = ConsoleColor.Red;
-                        message = "CRITICAL : " + message;
+                        color = ConsoleColor.DarkRed;
+                        message = "ERROR : " + message;
                         break;
 
                     case "deleting":
