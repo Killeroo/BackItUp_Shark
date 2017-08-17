@@ -1,5 +1,14 @@
 # BackItUp_Shark
+
+[![version](https://img.shields.io/badge/version-1.2.3-green.svg)]() ![maintained](https://img.shields.io/maintenance/yes/2017.svg) ![](http://img.badgesize.io/Killeroo/BackItUp_Shark/master/Build/BackItUp_Shark.exe.svg)
+
 Memory stick and drive backup tool written in C#
+
+![alt text](Screenshots/readme_screenshot_2.png "Creating a backup")
+
+# Download
+
+You can download the most recent stable release here: [[Github]](https://github.com/Killeroo/BackItUp_Shark/releases)
 
 # Usage:
     BackItUp_Shark.exe /? | [source] [destination] /silent /merge /name:[name]
@@ -22,7 +31,6 @@ Memory stick and drive backup tool written in C#
 # Screenshots:
 
 ![alt text](Screenshots/readme_screenshot_1.png "BackItUp_Shark's simple text menu")
-![alt text](Screenshots/readme_screenshot_2.png "Creating a backup")
 ![alt text](Screenshots/readme_screenshot_3.png "Updating a backup")
 
 
