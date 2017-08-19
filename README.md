@@ -4,6 +4,8 @@
 
 Memory stick and drive backup tool written in C#
 
+***
+
 ![alt text](Screenshots/readme_screenshot_2.png "Creating a backup")
 
 # Download
