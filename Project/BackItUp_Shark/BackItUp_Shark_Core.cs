@@ -8,7 +8,7 @@ namespace BackItUp_Shark
     class BackItUp_Shark_Core
     {
 
-        // Global Variable declaration
+        // Declarations
         private static List<System.IO.FileInfo> backupFiles = new List<System.IO.FileInfo>(); // Stores All files to be backed up
         private static bool quietMode = false;
 
@@ -42,12 +42,12 @@ namespace BackItUp_Shark
                 SetupBackupDir(backupDestPath, backupName);
             
             /* FILE DISCOVERY */
-            log("Discovering files in [ " + targetPath + " ] . . . ", "");
+            log("Discovering files in [ " + targetPath + " ]... ", "");
             driveFiles = GetFiles(targetPath);
             log("DONE", "", true);
             log(driveFiles.Count() + " files found.", "", true);
 
-            log("Starting backup . . . ", "", true);
+            log("Starting backup... ", "", true);
             stopWatch = System.Diagnostics.Stopwatch.StartNew(); // Start timer
 
             /* FILE COPY */
@@ -72,14 +72,25 @@ namespace BackItUp_Shark
                 try
                 {
                     /* COPY FILE */
-                    log("", "copying", false, file);
-                    System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
-                    log("[DONE]", "", true, null, ConsoleColor.DarkGreen);
-                    fileCount++;
+
                     // Update title bar
                     double num = driveFiles.Count();
                     double percent = (fileCount / num) * 100;
                     log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [RUNNING] " + Math.Round(percent, 0) + "% complete");
+
+                    // Draw loading bar
+                    Console.CursorTop++;
+                    LoadingBar(Math.Round(percent, 0));
+
+                    // Write current file
+                    Console.CursorTop = Console.CursorTop - 2;
+                    Console.Write(new string(' ', 60));
+                    Console.CursorLeft = 0;
+                    log("", "copying", false, file);
+                    System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
+                    log("[DONE]", "", true, null, ConsoleColor.DarkGreen);
+                    fileCount++;
+
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -160,7 +171,7 @@ namespace BackItUp_Shark
                 /* DELETE EXISTING BACKUP FOLDER */
                 log("Backup folder [" + backupName + "] found.", "", true);
                 log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [PURGING]");
-                log("Purging previous backup data . . . ", "", true, null, ConsoleColor.DarkRed);
+                log("Purging previous backup data ... ", "", true, null, ConsoleColor.DarkRed);
 
                 // Delete files in folder root
                 System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(backupDestPath);
@@ -208,7 +219,7 @@ namespace BackItUp_Shark
 
             log("Backup folder [" + backupName + "] found.", "", true);
             log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [UPDATING]");
-            log("Updating back up . . . ", "", true, null, ConsoleColor.DarkCyan);
+            log("Updating back up ... ", "", true, null, ConsoleColor.DarkCyan);
 
             /* BACKUP UPDATE & ADD */
             foreach (var file in missingFromBackupFiles)
@@ -235,7 +246,7 @@ namespace BackItUp_Shark
                 try
                 {
                     /* FILE COPY */
-                    log(file.FullName + " . . . ", System.IO.File.Exists(curFullDest) ? "updating" : "adding");
+                    log(file.FullName + " ... ", System.IO.File.Exists(curFullDest) ? "updating" : "adding");
                     System.IO.File.Copy(file.FullName, curFullDest, true);
                     log("DONE", "", true, null, System.IO.File.Exists(curFullDest) ? ConsoleColor.DarkCyan : ConsoleColor.DarkGreen);
                     fileCount++;
@@ -333,7 +344,7 @@ namespace BackItUp_Shark
                             color = ConsoleColor.DarkCyan;
                         else
                             color = ConsoleColor.DarkGreen;
-                        message = "COPYING : " + file.Name + " Size: " + ((fileSizeMb > 1L) ? fileSizeMb + "Mb . . . " : fileSizeKb + "Kb . . . ");
+                        message = "COPYING : " + file.Name + " Size: " + ((fileSizeMb > 1L) ? fileSizeMb + "mb... " : fileSizeKb + "kb... ");
                         break;
 
                     case "error":
@@ -367,11 +378,19 @@ namespace BackItUp_Shark
                 Console.Write(message);
 
                 if (newLine)
-                    Console.Write("\n");
+                    Console.WriteLine();
 
                 // Reset console color
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
+        }
+
+        static void LoadingBar(double percent)
+        {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("Backup Running [                        ] {0}%", Math.Round(percent));
+            Console.CursorLeft = 16;
+            Console.WriteLine(new String('#', Convert.ToInt32(Math.Round((25 * (percent / 100)), 0))));
         }
 
         static void BackupSummary(int fileCount, string backupName, string backupTarget, string backupDestPath, TimeSpan timeTaken)//System.Diagnostics.Stopwatch timeTaken)
