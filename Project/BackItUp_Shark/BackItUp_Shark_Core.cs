@@ -78,18 +78,24 @@ namespace BackItUp_Shark
                     double percent = (fileCount / num) * 100;
                     log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [RUNNING] " + Math.Round(percent, 0) + "% complete");
 
-                    // Draw loading bar
-                    Console.CursorTop++;
-                    LoadingBar(Math.Round(percent, 0));
-
                     // Write current file
-                    Console.CursorTop = Console.CursorTop - 2;
-                    Console.Write(new string(' ', 60));
-                    Console.CursorLeft = 0;
+                    //Console.CursorTop = Console.CursorTop - 2;
+                    //Console.Write(new string(' ', 60));
+                    //Console.CursorLeft = 0;
                     log("", "copying", false, file);
-                    System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
+					int left = Console.CursorLeft;
+					int top = Console.CursorTop;
+					Console.WriteLine();
+					
+					// Draw loading bar
+                    LoadingBar(Math.Round(percent, 0));
+					
+					// Copy file
+					Console.CursorLeft = left;
+					Console.CursorTop = top;
+					System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
                     log("[DONE]", "", true, null, ConsoleColor.DarkGreen);
-                    fileCount++;
+					fileCount++;
 
                 }
                 catch (UnauthorizedAccessException)
@@ -388,7 +394,7 @@ namespace BackItUp_Shark
         static void LoadingBar(double percent)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("Backup Running [                        ] {0}%", Math.Round(percent));
+            Console.Write("{0}% [                        ] ", Math.Round(percent));
             Console.CursorLeft = 16;
             Console.WriteLine(new String('#', Convert.ToInt32(Math.Round((25 * (percent / 100)), 0))));
         }
