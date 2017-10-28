@@ -11,12 +11,38 @@ namespace BackItUp_Shark
         // Declarations
         private static List<System.IO.FileInfo> backupFiles = new List<System.IO.FileInfo>(); // Stores All files to be backed up
         private static bool quietMode = false;
+        private static string backupPath = "";
+        public static ConsoleColor DefaultColor, CurrentFileColor;
+
+        private struct FileErrors
+        {
+            public int AccessDenied;
+            public int FileNotFound;
+            public int PathTooLong;
+            public int IOException;
+            public int GeneralError;
+
+            public FileErrors(int initial) 
+            {
+                AccessDenied = initial;
+                FileNotFound = initial;
+                PathTooLong = initial;
+                IOException = initial;
+                GeneralError = initial;
+            }
+        }
 
         // Main backup function
         public static void Backup(string targetPath, string destPath, string backupName, bool silent, bool merge = false)
         {
             // Set console output
             quietMode = silent;
+
+            // Store backup target
+            backupPath = targetPath;
+
+            // For storing errors while copying
+            FileErrors errors = new FileErrors(0);
 
             // Local variable assignment
             System.Diagnostics.Stopwatch stopWatch = null; // Back up timer
@@ -78,52 +104,48 @@ namespace BackItUp_Shark
                     double percent = (fileCount / num) * 100;
                     log("", "", false, null, ConsoleColor.Gray, "BackItUp_Shark [RUNNING] " + Math.Round(percent, 0) + "% complete");
 
-                    // Write current file
-                    //Console.CursorTop = Console.CursorTop - 2;
-                    //Console.Write(new string(' ', 60));
-                    //Console.CursorLeft = 0;
-                    log("", "copying", false, file);
-					int left = Console.CursorLeft;
-					int top = Console.CursorTop;
-					Console.WriteLine();
-					
-					// Draw loading bar
+                    // Draw loading bar
+                    Console.CursorTop++;
                     LoadingBar(Math.Round(percent, 0));
-					
-					// Copy file
-					Console.CursorLeft = left;
-					Console.CursorTop = top;
-					System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
-                    log("[DONE]", "", true, null, ConsoleColor.DarkGreen);
-					fileCount++;
+
+                    // Write current file
+                    Console.CursorTop = Console.CursorTop - 2;
+                    ClearLine();
+                    Console.CursorLeft = 0;
+                    log("", "copying", false, file);
+                    System.IO.File.Copy(file.FullName, System.IO.Path.Combine(curPath, file.Name)); //backupDestPath + file.FullName.Split(':')[1]);
+                    log("[DONE]", "", true, null, CurrentFileColor);
+                    fileCount++;
 
                 }
                 catch (UnauthorizedAccessException)
                 {
                     log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
-                    log("Access denied.", "error", true);
+                    errors.AccessDenied++;
                 }
                 catch (System.IO.FileNotFoundException)
                 {
                     log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
-                    log("Cannot find " + file.Name, "error", true);
+                    errors.FileNotFound++;
                 }
                 catch (System.IO.PathTooLongException)
                 {
                     log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
-                    log("Target path too long. Cannot copy " + file.FullName, "error", true);
+                    errors.PathTooLong++;
                 }
                 catch (Exception)
                 {
                     log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
-                    log(file.Name + " Cannot be copied.", "error", true);
+                    errors.GeneralError++;
                 }
             }
+
+            LoadingBar(100d);
             stopWatch.Stop(); // Stop stopwatch
 
             /* BACKUP SUMMARY */
             if (!quietMode)
-                BackupSummary(fileCount, backupName, targetPath, backupDestPath, stopWatch.Elapsed);
+                BackupSummary(fileCount, backupName, targetPath, backupDestPath, stopWatch.Elapsed, errors);
         }
 
         // Create default backup name
@@ -351,6 +373,7 @@ namespace BackItUp_Shark
                         else
                             color = ConsoleColor.DarkGreen;
                         message = "COPYING : " + file.Name + " Size: " + ((fileSizeMb > 1L) ? fileSizeMb + "mb... " : fileSizeKb + "kb... ");
+                        CurrentFileColor = color; // Save color so [DONE] section can use same color
                         break;
 
                     case "error":
@@ -387,19 +410,24 @@ namespace BackItUp_Shark
                     Console.WriteLine();
 
                 // Reset console color
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = DefaultColor;
             }
         }
 
         static void LoadingBar(double percent)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("{0}% [                        ] ", Math.Round(percent));
-            Console.CursorLeft = 16;
-            Console.WriteLine(new String('#', Convert.ToInt32(Math.Round((25 * (percent / 100)), 0))));
+            Console.Write("Backing up {1} [                              ] {0}%", Math.Round(percent), backupPath);
+            Console.CursorLeft = 13 + backupPath.Length;
+            Console.WriteLine(new String('#', Convert.ToInt32(Math.Round((30 * (percent / 100)), 0))));
         }
 
-        static void BackupSummary(int fileCount, string backupName, string backupTarget, string backupDestPath, TimeSpan timeTaken)//System.Diagnostics.Stopwatch timeTaken)
+        static void ClearLine()
+        {
+            Console.Write(new String(' ', Console.WindowWidth - 1));
+        }
+
+        static void BackupSummary(int fileCount, string backupName, string backupTarget, string backupDestPath, TimeSpan timeTaken, FileErrors errors)//System.Diagnostics.Stopwatch timeTaken)
         {
             Console.Title = "BackItUp_Shark [COMPLETE]";
             Console.WriteLine();
@@ -420,7 +448,15 @@ namespace BackItUp_Shark
             Console.WriteLine();
             Console.WriteLine("###############################################");
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("                    ERRORS");
+            Console.WriteLine("###############################################");
+            Console.WriteLine("Access denied  = {0}  Hardware error = {1}", errors.AccessDenied, errors.IOException);
+            Console.WriteLine("File not found = {0}  Path too long  = {1}", errors.FileNotFound, errors.PathTooLong);
+            Console.WriteLine("General error  = {0}", errors.GeneralError);
+            Console.WriteLine("###############################################");
+            Console.WriteLine();
+            Console.ForegroundColor = DefaultColor;
         }
 
         // Custom FileCompare class (inherits Generic comparer) which compares files based on file name, length and access time

@@ -15,6 +15,9 @@ namespace BackItUp_Shark
             bool silentBackup = false; // Whether to display output or not
             bool mergeBackup = false; // Merge existing with existing backup
 
+            // Save default color
+            BackItUp_Shark.BackItUp_Shark_Core.DefaultColor = Console.ForegroundColor;
+
             /* ARGUMENTS CHECK */
 
             if (args.Length == 0) // Check program has any arguments
