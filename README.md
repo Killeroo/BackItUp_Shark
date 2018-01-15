@@ -1,6 +1,6 @@
 # BackItUp_Shark
 
-[![version](https://img.shields.io/badge/version-1.2.3-brightgreen.svg)]() ![maintained](https://img.shields.io/maintenance/yes/2017.svg) [![Build status](https://ci.appveyor.com/api/projects/status/mjlrf1ud3dm81507?svg=true)](https://ci.appveyor.com/project/Killeroo/backitup-shark)
+[![version](https://img.shields.io/badge/version-1.2.3-brightgreen.svg)]() ![maintained](https://img.shields.io/maintenance/yes/2018.svg) [![Build status](https://ci.appveyor.com/api/projects/status/mjlrf1ud3dm81507?svg=true)](https://ci.appveyor.com/project/Killeroo/backitup-shark)
 
 Memory stick and drive backup tool written in C#
 

@@ -135,7 +135,7 @@ namespace BackItUp_Shark
                 }
                 catch (Exception)
                 {
-                    log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
+                    log("[FAIL] " + e.GetType().ToString(), "", true, null, ConsoleColor.DarkRed);
                     errors.GeneralError++;
                 }
             }
