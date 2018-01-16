@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.IO;
 
 namespace BackItUp_Shark
 {
@@ -110,13 +111,15 @@ namespace BackItUp_Shark
                 // Get backup locations
                 Console.WriteLine();
                 Console.Write("Drive to backup: ");
-                input = Console.ReadLine();
+                try { input = Console.ReadKey().KeyChar.ToString(); Console.WriteLine(); }
+                catch (InvalidOperationException) { input = Console.ReadLine(); }
                 if (CheckMenuInput(input)) // Check user input
                     continue;
                 targetDrive = driveList.ElementAt(Convert.ToInt32(input) - 1); // Get drive info for target drive
                 backupTarget = targetDrive.Name;
                 Console.Write("Save backup to: ");
-                input = Console.ReadLine();
+                try { input = Console.ReadKey().KeyChar.ToString(); Console.WriteLine(); }
+                catch (InvalidOperationException) { input = Console.ReadLine(); }
                 if (CheckMenuInput(input))
                     continue;
                 backupLoc = driveList.ElementAt(Convert.ToInt32(input) - 1).Name;
@@ -134,7 +137,7 @@ namespace BackItUp_Shark
 
                 // Summary
                 Console.WriteLine();
-                Console.WriteLine("BackItUp_Shark will create backup of " + backupTarget + " called [" + (backupName == "" ? BackItUp_Shark_Core.createDefaultBackupName(targetDrive.Name) : backupName) + "]");
+                Console.WriteLine("BackItUp_Shark will create backup of " + backupTarget + " called [" + (backupName == "" ? BackItUp_Shark_Core.CreateDefaultBackupName(targetDrive.Name) : backupName) + "]");
                 Console.WriteLine("Here : [" + backupLoc + "Backup]");
 
                 // Confirm

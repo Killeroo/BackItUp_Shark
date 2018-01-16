@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Threading;
 
 namespace BackItUp_Shark
 {
@@ -51,7 +52,7 @@ namespace BackItUp_Shark
             int fileCount = 0;
 
             if (backupName == "") // Generate default backup name if not specified
-                backupName = createDefaultBackupName(targetPath);
+                backupName = CreateDefaultBackupName(targetPath);
             else if (backupName.Contains("DATE")) // Add timestamp
                 backupName.Replace("DATE", "Backup_" + DateTime.Today.Date.Day + "-" + DateTime.Today.Date.Month + "-" + DateTime.Today.Date.Year);
 
@@ -133,9 +134,9 @@ namespace BackItUp_Shark
                     log("[FAIL]", "", true, null, ConsoleColor.DarkRed);
                     errors.PathTooLong++;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    log("[FAIL] " + e.GetType().ToString(), "", true, null, ConsoleColor.DarkRed);
+                    log("[FAIL]\n" + e.GetType().ToString(), "", true, null, ConsoleColor.DarkRed);
                     errors.GeneralError++;
                 }
             }
@@ -149,7 +150,7 @@ namespace BackItUp_Shark
         }
 
         // Create default backup name
-        public static String createDefaultBackupName(String driveLetter)
+        public static String CreateDefaultBackupName(String driveLetter)
         {
             String name;
             System.IO.DriveInfo drive = null;
@@ -417,7 +418,8 @@ namespace BackItUp_Shark
         static void LoadingBar(double percent)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("Backing up {1} [                              ] {0}%", Math.Round(percent), backupPath);
+            //Console.Write("Backing up {1} [                              ] {0}%", Math.Round(percent), backupPath);
+            Console.Write("Backing up {1} [..............................] {0}%", Math.Round(percent), backupPath);
             Console.CursorLeft = 13 + backupPath.Length;
             Console.WriteLine(new String('#', Convert.ToInt32(Math.Round((30 * (percent / 100)), 0))));
         }
