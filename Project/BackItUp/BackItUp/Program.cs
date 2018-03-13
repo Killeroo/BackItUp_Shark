@@ -9,6 +9,9 @@ namespace BackItUp
 {
     class Program
     {
+        // Multi thread?
+        // With max thread count?
+
         static string sourcePath;
         static string destinationPath;
 
@@ -18,9 +21,25 @@ namespace BackItUp
         static int errors = 0;
         static int matches = 0;
 
+        const string USAGE = "Backitup [Source Path] [Destination Path]";
+
         static void Main(string[] args)
         {
+            // Arguments check
+            if (args.Length != 2) {
+                Warning("Not enough arguments.");
+                Console.WriteLine(USAGE);
+                Environment.Exit(1);
+            }
 
+            // Check path to backup exists
+            if (!Directory.Exists(args[1])) {
+                Error("The path you want to backup doesn't exist, please pick another path and try again.");
+            }
+
+
+
+            DiscoverFiles(args[0]);
         }
 
         // Recursive file discovery function
@@ -59,7 +78,7 @@ namespace BackItUp
 
         private static void CopyFile(string path)
         {
-
+            Console.WriteLine("COPYING: {0}", Path.GetFileName(path));
         }
 
         static void SetupBackupDir(string path, string backupName)
